@@ -15,7 +15,7 @@ class CreateDistributionRulesTable extends Migration
     {
         Schema::create('distribution_rules', function (Blueprint $table) {
             $table->id();
-            $table->integer('distribution_id ')->nullable()->index()->comment('分销ID');
+            $table->integer('distribution_id')->nullable()->index()->comment('分销ID');
             $table->string('name',30)->nullable()->comment('别名');
             $table->tinyInteger('type')->default(0)->comment('返佣方式0按固定值1按比例');
             $table->tinyInteger('level')->default(1)->comment('级别1：一级2：二级3：三级	');
