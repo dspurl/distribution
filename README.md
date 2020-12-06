@@ -33,6 +33,8 @@ php artisan migrate
 - `comment/example/api/Models/User.php`->`api/app/Http/Controllers/v1/Models/User.php`
 - `comment/example/trade/user/user.vue`->`trade/Dsshop/pages/user/user.vue`
 - `comment/example/trade/static/share.jpg`->`trade/Dsshop/static/share.jpg`
+- `comment/example/trade/public/login.vue`->`trade/Dsshop/pages/public/login.vue`
+- `comment/example/trade/public/register.vue`->`trade/Dsshop/pages/public/register.vue`
 #### 九、 测试分销的创建、修改、查看上下级是否能获得返佣，如果功能都能正常使用，则说明你的插件安装成功
 ## 如何更新插件
 - 首先请备份项目，升级可能产生问题（如自行修改了涉及到升级的文件、下载的文件不全等问题）
