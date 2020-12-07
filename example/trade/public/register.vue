@@ -70,8 +70,8 @@
 			// #ifndef  MP-WEIXIN
 			this.TabCur = 1
 			// #endif
-			if(options.uuid){
-				this.ruleForm.uuid = options.uuid
+			if(option.uuid){
+				this.ruleForm.uuid = option.uuid
 			}
 			
 		},
