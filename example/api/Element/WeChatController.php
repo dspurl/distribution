@@ -99,6 +99,14 @@ class WeChatController  extends Controller
             return resReturn(0,'手机号已被注册',Code::CODE_WRONG);
         }
         $return=DB::transaction(function ()use($request){
+            $addUser=new User();
+            $addUser->name = $request->cellphone;
+            $addUser->cellphone = $request->cellphone;
+            $addUser->password=bcrypt($request->password);
+            $addUser->api_token = hash('sha256', Str::random(60));
+            $addUser->uuid = (string) Uuid::generate();
+            $addUser->save();   
+            
             // 注册奖励规则获取
             $Distribution=Distribution::where('state',Distribution::DISTRIBUTION_STATE_OPEN)->where('identification',Distribution::DISTRIBUTION_IDENTIFICATION_REGISTRATION__CASH)
                 ->with(['DistributionRule'])->first();
@@ -109,15 +117,9 @@ class WeChatController  extends Controller
                     $price=0;   //注册奖励没有参考金额，所以无法按比例奖励，如需按比例，请写死一个固定值
                 }
             }catch (\EXception $e){
-                return 0;
+                return 1;
             }
-            $addUser=new User();
-            $addUser->name = $request->cellphone;
-            $addUser->cellphone = $request->cellphone;
-            $addUser->password=bcrypt($request->password);
-            $addUser->api_token = hash('sha256', Str::random(60));
-            $addUser->uuid = (string) Uuid::generate();
-            $addUser->save();
+
             // 用户关系绑定
             if($request->has('uuid')){
                 $User=User::where('uuid',$request->uuid)->with([ //一级
