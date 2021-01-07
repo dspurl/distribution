@@ -21,6 +21,7 @@ class CreateDistributionLogsTable extends Migration
             $table->tinyInteger('type')->default(0)->comment('返佣方式0按固定值1按比例');
             $table->tinyInteger('level')->default(1)->comment('级别1：一级2：二级3：三级	');
             $table->integer('price')->default(0)->comment('返佣金额');
+            $table->tinyInteger('state')->default(0)->comment('分销状态, 0触发1成功, 只有成功的分销记录才可提现');
             $table->timestamps();
             $table->charset = 'utf8';
             $table->engine = 'InnoDB';

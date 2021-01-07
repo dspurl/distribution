@@ -117,6 +117,7 @@ class WeChatController  extends Controller
                     $DistributionLog->type = $Distribution->DistributionRule[0]->type;
                     $DistributionLog->level = DistributionLog::DISTRIBUTION_LOG_LEVEL_ONE;
                     $DistributionLog->price = $price;
+                    $DistributionLog->state = 1;
                     $DistributionLog->save();
                     $Money=new MoneyLog();
                     $Money->user_id = $User->id;
