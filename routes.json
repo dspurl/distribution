@@ -1,5 +1,5 @@
 {
-  "admin": "Route::get('distribution', 'DistributionController@list')->middleware(['permissions:DistributionList']);    //分销列表\n            Route::post('distribution', 'DistributionController@create')->middleware(['permissions:DistributionCreate']);    //分销添加\n            Route::post('distribution/{photo}', 'DistributionController@edit')->middleware(['permissions:DistributionEdit']);    //分销修改\n            Route::post('distribution/destroy/{photo}', 'DistributionController@destroy')->middleware(['permissions:DistributionDestroy']);    //分销删除",
-  "permission": "Distribution: () => import('@/views/ToolManagement/Distribution/index'),\n  DistributionList: () => import('@/views/ToolManagement/Distribution/list'),",
+  "admin": "Route::get('distribution', 'DistributionController@index')->middleware(['permissions:DistributionList']);    //分销列表\n        Route::post('distribution', 'DistributionController@store')->middleware(['permissions:CreateDistribution']);    //分销添加\n        Route::put('distribution/{photo}', 'DistributionController@update')->middleware(['permissions:EditDistribution']);    //分销更新\n        Route::delete('distribution/{photo}', 'DistributionController@destroy')->middleware(['permissions:DeleteDistribution']);    //分销删除",
+  "permission": "Distribution: () => import('@/views/tool/Distribution/index'),\n  DistributionList: () => import('@/views/tool/Distribution/list'),",
   "uniApp": ",{\n\t\t\t\"path\": \"pages/user/share\",\n\t\t\t\"style\": {\n\t\t\t\t\"navigationBarTitleText\": \"分享\"\n\t\t\t}\n\t\t}"
 }

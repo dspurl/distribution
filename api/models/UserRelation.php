@@ -14,14 +14,13 @@ use Illuminate\Support\Facades\DB;
 class UserRelation extends Model
 {
     public static $withoutAppends = true;
-    const USER_RELATION_LEVEL_ONE = 1; //等级：一级
-    const USER_RELATION_LEVEL_TWO = 2; //等级：二级
-    const USER_RELATION_LEVEL_THREE = 3; //等级：三级
-
+    const USER_RELATION_LEVEL_ONE= 1; //等级：一级
+    const USER_RELATION_LEVEL_TWO= 2; //等级：二级
+    const USER_RELATION_LEVEL_THREE= 3; //等级：三级
     /**
      * Prepare a date for array / JSON serialization.
      *
-     * @param \DateTimeInterface $date
+     * @param  \DateTimeInterface  $date
      * @return string
      */
     protected function serializeDate(DateTimeInterface $date)
@@ -32,14 +31,12 @@ class UserRelation extends Model
     /**
      * 关联分销规则
      */
-    public function User()
-    {
+    public function User(){
         return $this->hasMany(User::class);
     }
 
     //用户关系
-    public function UserRelation()
-    {
-        return $this->hasOne(UserRelation::class, 'children_id', 'parent_id');
+    public function UserRelation(){
+        return $this->hasOne(UserRelation::class,'children_id','parent_id');
     }
 }
