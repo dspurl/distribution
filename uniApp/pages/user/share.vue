@@ -178,8 +178,6 @@
 			line-height: 60upx;
 		}
 		.img{
-			display: flex;
-			justify-content: center;
 			margin-top:40upx;
 			text-align: center;
 			image{
