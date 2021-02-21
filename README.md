@@ -94,6 +94,21 @@ export default{
 </script>
 ```
 
+配置模板通知
+
+```php
+#api\config\notification.php
+'wechat'=>[ //微信公众号
+    ...
+    'recommend_success'=>env('WECHAT_SUBSCRIPTION_INFORMATION_RECOMMEND_SUCCESS',''),  //	推荐会员成功提醒
+    ],
+```
+
+```shell
+#.env
+WECHAT_SUBSCRIPTION_INFORMATION_RECOMMEND_SUCCESS=
+```
+
 
 
 ## 如何更新插件
