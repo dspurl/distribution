@@ -51,166 +51,6 @@ php artisan migrate
 ###### 添加关系绑定和分销机制
 
 ```php
-#api\app\Http\Controllers\v1\Client\LoginController.php
-use App\Models\v1\Distribution;
-use App\Models\v1\DistributionLog;
-use App\Models\v1\MoneyLog;
-use App\Models\v1\UserRelation;
-public function authorization(Request $request)
-{
-	...
-    $user->save();
-    // 用户关系绑定
-    if ($request->has('uuid')) {
-        // 注册奖励规则获取
-        $Distribution = Distribution::where('state', Distribution::DISTRIBUTION_STATE_OPEN)->where('identification', Distribution::DISTRIBUTION_IDENTIFICATION_REGISTRATION__CASH)
-            ->with(['DistributionRule'])->first();
-        try {    // 防止未按后台录入格式入库的脏数据产生的异常
-            if ($Distribution->DistributionRule[0]->type == Distribution::DISTRIBUTION_TYPE_FIXED_AMOUNT) {
-                $price = $Distribution->DistributionRule[0]->price;
-            } else {
-                $price = 0;   //注册奖励没有参考金额，所以无法按比例奖励，如需按比例，请写死一个固定值
-            }
-        } catch (\EXception $e) {
-            return 1;
-        }
-        $User = User::where('uuid', $request->uuid)->with([ //一级
-            'UserRelation' => function ($q) {   //二级
-                $q->where('level', UserRelation::USER_RELATION_LEVEL_ONE)->with(['UserRelation' => function ($q) {   //三级
-                    $q->where('level', UserRelation::USER_RELATION_LEVEL_ONE);
-                }]);
-            }
-        ])->first();
-        // 注册奖励处理
-        if ($Distribution) {
-            User::where('id', $User->id)->increment('money', $price);
-            $DistributionLog = new DistributionLog();
-            $DistributionLog->user_id = $User->id;
-            $DistributionLog->children_id = $user->id;
-            $DistributionLog->name = $Distribution->name;
-            $DistributionLog->type = $Distribution->DistributionRule[0]->type;
-            $DistributionLog->level = DistributionLog::DISTRIBUTION_LOG_LEVEL_ONE;
-            $DistributionLog->price = $price;
-            $DistributionLog->save();
-            $Money = new MoneyLog();
-            $Money->user_id = $User->id;
-            $Money->type = MoneyLog::MONEY_LOG_TYPE_INCOME;
-            $Money->money = $price;
-            $Money->remark = '邀请奖励，获得' . ($price / 100) . '元';
-            $Money->save();
-            $Common = (new Common)->inviteReward([
-                'money_id' => $Money->id,  //资金记录ID
-                'total' => $price,    //奖励金额
-                'user_id' => $User->id   //用户ID
-            ]);
-            if ($Common['result'] == 'error') {
-                return $Common;
-            }
-        }
-        // 一级关系绑定
-        $UserRelation = new UserRelation();
-        $UserRelation->children_id = $user->id;    //注册用户ID
-        $UserRelation->parent_id = $User->id;    //一级ID
-        $UserRelation->level = UserRelation::USER_RELATION_LEVEL_ONE;
-        $UserRelation->save();
-        //二级关系绑定
-        if ($User->UserRelation) {
-            $UserRelation = new UserRelation();
-            $UserRelation->children_id = $user->id;  //注册用户ID
-            $UserRelation->parent_id = $User->UserRelation->parent_id;  //二级ID
-            $UserRelation->level = UserRelation::USER_RELATION_LEVEL_TWO;
-            $UserRelation->save();
-            //三级关系绑定
-            if ($User->UserRelation->UserRelation) {
-                $UserRelation = new UserRelation();
-                $UserRelation->children_id = $user->id;  //注册用户ID
-                $UserRelation->parent_id = $User->UserRelation->UserRelation->parent_id;  //三级ID
-                $UserRelation->level = UserRelation::USER_RELATION_LEVEL_THREE;
-                $UserRelation->save();
-            }
-        }
-    }
-    ...
-}
-public function register(Request $request)
-{
-    ...
-    $addUser->save();
-    // 注册奖励规则获取
-    $Distribution = Distribution::where('state', Distribution::DISTRIBUTION_STATE_OPEN)->where('identification', Distribution::DISTRIBUTION_IDENTIFICATION_REGISTRATION__CASH)
-        ->with(['DistributionRule'])->first();
-    try {    // 防止未按后台录入格式入库的脏数据产生的异常
-        if ($Distribution->DistributionRule[0]->type == Distribution::DISTRIBUTION_TYPE_FIXED_AMOUNT) {
-            $price = $Distribution->DistributionRule[0]->price;
-        } else {
-            $price = 0;   //注册奖励没有参考金额，所以无法按比例奖励，如需按比例，请写死一个固定值
-        }
-    } catch (\EXception $e) {
-        return 1;
-    }
-
-    // 用户关系绑定
-    if ($request->has('uuid')) {
-        $User = User::where('uuid', $request->uuid)->with([ //一级
-            'UserRelation' => function ($q) {   //二级
-                $q->where('level', UserRelation::USER_RELATION_LEVEL_ONE)->with(['UserRelation' => function ($q) {   //三级
-                    $q->where('level', UserRelation::USER_RELATION_LEVEL_ONE);
-                }]);
-            }
-        ])->first();
-        // 注册奖励处理
-        if ($Distribution) {
-            User::where('id', $User->id)->increment('money', $price);
-            $DistributionLog = new DistributionLog();
-            $DistributionLog->user_id = $User->id;
-            $DistributionLog->children_id = $addUser->id;
-            $DistributionLog->name = $Distribution->name;
-            $DistributionLog->type = $Distribution->DistributionRule[0]->type;
-            $DistributionLog->level = DistributionLog::DISTRIBUTION_LOG_LEVEL_ONE;
-            $DistributionLog->price = $price;
-            $DistributionLog->save();
-            $Money = new MoneyLog();
-            $Money->user_id = $User->id;
-            $Money->type = MoneyLog::MONEY_LOG_TYPE_INCOME;
-            $Money->money = $price;
-            $Money->remark = '邀请奖励，获得' . ($price / 100) . '元';
-            $Money->save();
-            $Common = (new Common)->inviteReward([
-                'money_id' => $Money->id,  //资金记录ID
-                'total' => $price,    //奖励金额
-                'user_id' => $User->id   //用户ID
-            ]);
-            if ($Common['result'] == 'error') {
-                return $Common;
-            }
-        }
-        // 一级关系绑定
-        $UserRelation = new UserRelation();
-        $UserRelation->children_id = $addUser->id;    //注册用户ID
-        $UserRelation->parent_id = $User->id;    //一级ID
-        $UserRelation->level = UserRelation::USER_RELATION_LEVEL_ONE;
-        $UserRelation->save();
-        //二级关系绑定
-        if ($User->UserRelation) {
-            $UserRelation = new UserRelation();
-            $UserRelation->children_id = $addUser->id;  //注册用户ID
-            $UserRelation->parent_id = $User->UserRelation->parent_id;  //二级ID
-            $UserRelation->level = UserRelation::USER_RELATION_LEVEL_TWO;
-            $UserRelation->save();
-            //三级关系绑定
-            if ($User->UserRelation->UserRelation) {
-                $UserRelation = new UserRelation();
-                $UserRelation->children_id = $addUser->id;  //注册用户ID
-                $UserRelation->parent_id = $User->UserRelation->UserRelation->parent_id;  //三级ID
-                $UserRelation->level = UserRelation::USER_RELATION_LEVEL_THREE;
-                $UserRelation->save();
-            }
-        }
-    }
-}   
-```
-
-```php
 #api\app\Models\v1\User.php
 //用户关系
 public function UserRelation()
@@ -231,7 +71,7 @@ public function UserRelation()
 </script>
 ```
 
-######授权登录添加关联代码
+###### 授权登录添加关联代码
 
 ```vue
 #trade\Dsshop\pages\public\login.vue
@@ -252,6 +92,21 @@ export default{
 		},
 }
 </script>
+```
+
+配置模板通知
+
+```php
+#api\config\notification.php
+'wechat'=>[ //微信公众号
+    ...
+    'recommend_success'=>env('WECHAT_SUBSCRIPTION_INFORMATION_RECOMMEND_SUCCESS',''),  //	推荐会员成功提醒
+    ],
+```
+
+```shell
+#.env
+WECHAT_SUBSCRIPTION_INFORMATION_RECOMMEND_SUCCESS=
 ```
 
 

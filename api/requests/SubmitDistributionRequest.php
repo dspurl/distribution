@@ -13,15 +13,21 @@ class SubmitDistributionRequest extends Request
      */
     public function authorize()
     {
-        switch ($this->method()) {
-            case 'POST':
+        switch ($this->method())
+        {
+            case 'POST':    //create
                 return true;
+            case 'PUT': //update
+                return true;
+            case 'PATCH':
             case 'GET':
+            case 'DELETE':
             default:
             {
                 return false;
             }
         }
+
     }
 
     /**
@@ -31,39 +37,40 @@ class SubmitDistributionRequest extends Request
      */
     public function rules()
     {
-        $request = Request::all();
-        switch ($this->method()) {
+        switch ($this->method())
+        {
             case 'POST':    //create
-                if (Request::has('id')) {   //更新
-                    return [
-                        'name' => 'required|string|max:30',
-                        'identification' => 'required|unique:distributions,identification,' . $request['id'] . '|string|max:100',
-                        'level' => 'required|integer',
-                        'state' => 'required|integer',
-                        'distribution_rule'=>'required|array',
-                        'distribution_rule.*.name'=>'required|string|max:30',
-                        'distribution_rule.*.type'=>'required|Boolean',
-                        'distribution_rule.*.level' => 'required|integer',
-                        'distribution_rule.*.price'=>'required|integer',
-                    ];
-                } else {
-                    return [
-                        'name' => 'required|string|max:30',
-                        'identification' => 'required|unique:distributions|string|max:100',
-                        'level' => 'required|integer',
-                        'state' => 'required|integer',
-                        'distribution_rule'=>'required|array',
-                        'distribution_rule.*.name'=>'required|string|max:30',
-                        'distribution_rule.*.type'=>'required|Boolean',
-                        'distribution_rule.*.level' => 'required|integer',
-                        'distribution_rule.*.price'=>'required|integer',
-                    ];
-                }
+                return [
+                    'name' => 'required|string|max:30',
+                    'identification' => 'required|unique:distributions|string|max:100',
+                    'level' => 'required|integer',
+                    'state' => 'required|integer',
+                    'distribution_rule'=>'required|array',
+                    'distribution_rule.*.name'=>'required|string|max:30',
+                    'distribution_rule.*.type'=>'required|Boolean',
+                    'distribution_rule.*.level' => 'required|integer',
+                    'distribution_rule.*.price'=>'required|integer',
+                ];
+            case 'PUT': //update
+                $request = Request::all();
+                return [
+                    'name' => 'required|string|max:30',
+                    'identification' => 'required|unique:distributions,identification,'.$request['id'].'|string|max:100',
+                    'level' => 'required|integer',
+                    'state' => 'required|integer',
+                    'distribution_rule'=>'required|array',
+                    'distribution_rule.*.name'=>'required|string|max:30',
+                    'distribution_rule.*.type'=>'required|Boolean',
+                    'distribution_rule.*.level' => 'required|integer',
+                    'distribution_rule.*.price'=>'required|integer',
+                ];
+            case 'PATCH':
             case 'GET':
+            case 'DELETE':
             default:
-            {
-                return [];
-            }
+                {
+                    return [];
+                }
         }
     }
 

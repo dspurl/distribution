@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-button v-permission="$store.jurisdiction.DistributionCreate" class="filter-item" style="margin-left: 10px;float:right;" type="primary" icon="el-icon-edit" @click="handleCreate">添加</el-button>
+      <el-button v-permission="$store.jurisdiction.CreateDistribution" class="filter-item" style="margin-left: 10px;float:right;" type="primary" icon="el-icon-edit" @click="handleCreate">添加</el-button>
     </div>
 
     <el-table
@@ -12,8 +12,7 @@
       border
       fit
       highlight-current-row
-      style="width: 100%;"
-      @sort-change="sortChange">
+      style="width: 100%;">
       <el-table-column type="expand" >
         <template slot-scope="scope">
           <el-table
@@ -41,7 +40,7 @@
           </el-table>
         </template>
       </el-table-column>
-      <el-table-column label="编号" sortable="custom" prop="id" align="center">
+      <el-table-column label="编号" prop="id" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.id }}</span>
         </template>
@@ -56,29 +55,25 @@
           <code>{{ scope.row.identification }}</code>
         </template>
       </el-table-column>
-      <el-table-column label="分销等级" sortable="custom" prop="level">
+      <el-table-column label="分销等级">
         <template slot-scope="scope">
           <span>{{ scope.row.level }}级</span>
         </template>
       </el-table-column>
-      <el-table-column label="分销状态" sortable="custom" prop="state">
+      <el-table-column label="分销状态">
         <template slot-scope="scope">
           <span>{{ scope.row.state === 1 ? '关闭' : '开启' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" sortable="custom" prop="created_at">
+      <el-table-column label="创建时间" align="center" prop="goods_sn">
         <template slot-scope="scope">
           <span>{{ scope.row.created_at }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" class-name="small-padding fixed-width" width="120" fixed="right">
+      <el-table-column label="操作" class-name="small-padding fixed-width" width="250" fixed="right">
         <template slot-scope="scope">
-          <el-tooltip v-permission="$store.jurisdiction.DistributionEdit" class="item" effect="dark" content="编辑" placement="top-start">
-            <el-button type="primary" icon="el-icon-edit" circle @click="handleUpdate(scope.row)"/>
-          </el-tooltip>
-          <el-tooltip v-permission="$store.jurisdiction.DistributionDestroy" class="item" effect="dark" content="删除" placement="top-start">
-            <el-button :loading="formLoading" type="danger" icon="el-icon-delete" circle @click="handleDelete(scope.row)"/>
-          </el-tooltip>
+          <el-button v-permission="$store.jurisdiction.EditDistribution" type="success" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+          <el-button v-permission="$store.jurisdiction.DeleteDistribution" type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -169,7 +164,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{ $t('usuel.cancel') }}</el-button>
-        <el-button :loading="formLoading" type="primary" @click="dialogStatus==='create'?createSubmit():updateSubmit()">确定</el-button>
+        <el-button type="primary" @click="dialogStatus==='create'?createSubmit():updateSubmit()">确定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -231,7 +226,7 @@
 </style>
 
 <script>
-import { getList, create, edit, destroy } from '@/api/distribution'
+import { getList, setDelete, createSubmit, updateSubmit } from '@/api/distribution'
 import Pagination from '@/components/Pagination'
 
 export default {
@@ -239,7 +234,6 @@ export default {
   components: { Pagination },
   data() {
     return {
-      formLoading: false,
       pickerOptions: {
         disabledDate(time) {
           return time.getTime() < Date.now() - 8.64e7
@@ -318,10 +312,17 @@ export default {
     },
     sortChange(data) {
       const { prop, order } = data
+      if (prop === 'id') {
+        this.sortByID(order)
+      } else if (prop === 'time') {
+        this.sortByTIME(order)
+      }
+    },
+    sortByID(order) {
       if (order === 'ascending') {
-        this.listQuery.sort = '+' + prop
+        this.listQuery.sort = '+id'
       } else {
-        this.listQuery.sort = '-' + prop
+        this.listQuery.sort = '-id'
       }
       this.handleFilter()
     },
@@ -371,32 +372,27 @@ export default {
       }
     },
     handleDelete(row) { // 删除
-      const title = '删除后无法恢复，继续删除?'
-      const win = '删除成功'
+      var title = '删除后，已领取或使用过的优惠券将无法正常读取?'
+      var win = '删除成功'
       this.$confirm(title, this.$t('hint.hint'), {
         confirmButtonText: this.$t('usuel.confirm'),
         cancelButtonText: this.$t('usuel.cancel'),
         type: 'warning'
       }).then(() => {
-        this.formLoading = true
-        destroy(row.id).then(() => {
+        setDelete(row.id, row).then(() => {
           this.getList()
           this.dialogFormVisible = false
-          this.formLoading = false
           this.$notify({
             title: this.$t('hint.succeed'),
             message: win,
             type: 'success',
             duration: 2000
           })
-        }).catch(() => {
-          this.formLoading = false
         })
       }).catch(() => {
       })
     },
     createSubmit() { // 添加
-      this.formLoading = true
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           for (const item of this.temp.distribution_rule) {
@@ -409,43 +405,32 @@ export default {
               return false
             }
           }
-          create(this.temp).then(() => {
+          createSubmit(this.temp).then(() => {
             this.getList()
             this.dialogFormVisible = false
-            this.formLoading = false
             this.$notify({
               title: this.$t('hint.succeed'),
               message: this.$t('hint.creatingSuccessful'),
               type: 'success',
               duration: 2000
             })
-          }).catch(() => {
-            this.formLoading = false
           })
-        } else {
-          this.formLoading = false
         }
       })
     },
     updateSubmit() { // 更新
-      this.formLoading = true
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          edit(this.temp).then(() => {
+          updateSubmit(this.temp.id, this.temp).then(() => {
             this.getList()
             this.dialogFormVisible = false
-            this.formLoading = false
             this.$notify({
               title: this.$t('hint.succeed'),
               message: this.$t('hint.updateSuccessful'),
               type: 'success',
               duration: 2000
             })
-          }).catch(() => {
-            this.formLoading = false
           })
-        } else {
-          this.formLoading = false
         }
       })
     }
