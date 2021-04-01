@@ -143,6 +143,8 @@
                     v-model="scope.row.type"
                     active-text="按比例"
                     inactive-text="按固定值"
+                    active-value="1"
+                    inactive-value="0"
                     @change="e => updateInput(e, scope.$index, 'type')"/>
                 </el-form-item>
               </el-form>
