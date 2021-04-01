@@ -4,5 +4,5 @@
     "describe": "分销插件，实现上下三级绑定，可根据自定义规则配置每级返佣金额，可按固定金额返佣和按比例返佣",
     "url": "https://github.com/dspurl/distribution",
     "download": "",
-    "versions": "1.0.1"
+    "versions": "1.1.0"
 }

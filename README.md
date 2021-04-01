@@ -1,8 +1,8 @@
 #评价
 ## 说明
 - 该插件依赖dsshop项目，而非通用插件
-- 支持版本:dshop v1.3及以上
-- 已同步版本：dsshop v1.3.2
+- 支持版本:dshop v2.0.0及以上
+- 已同步版本：dsshop v2.0.0
 
 ## 功能介绍
 - 支持上下三级关系自动绑定
@@ -24,20 +24,94 @@
 ```
 php artisan migrate
 ```
-#### 六、 进入数据库，导入 `distribution/distribution.sql` SQL文件（sql文件需要按照下图进行修改，也可后台自行添加权限，效果一样）
-![](/image/1.png)
-![](/image/2.png)
+#### 六、 进入后台，添加权限
+
+| **权限名称** | **API**             | **分组**   | **菜单图标** | **显示在菜单栏** |
+| ------------ | ------------------- | ---------- | ------------ | ---------------- |
+| 分销         | Distribution        | 工具       | 否           | 是               |
+| 分销列表     | DistributionList    | 工具->分销 | 否           | 是               |
+| 添加分销     | DistributionCreate  | 工具->分销 | 否           | 否               |
+| 分销编辑     | DistributionEdit    | 工具->分销 | 否           | 否               |
+| 分销删除     | DistributionDestroy | 工具->分销 | 否           | 否               |
+
+
+
 #### 七、 进入后台，为管理员分配权限
-#### 八、 使用分销插件，如这是第一个插件，可直接按以下步骤替换目标文件即可，如安装有其它插件，可能存在修改同一文件的可能，请进行文件比对进行手动修改
-- `comment/example/api/Element/WeChatController.php`->`api/app/Http/Controllers/v1/Element/WeChatController.php`
-- `comment/example/api/Models/User.php`->`api/app/Http/Controllers/v1/Models/User.php`
-- `comment/example/trade/user/user.vue`->`trade/Dsshop/pages/user/user.vue`
-- `comment/example/trade/static/share.jpg`->`trade/Dsshop/static/share.jpg`
-#### 九、 测试分销的创建、修改、查看上下级是否能获得返佣，如果功能都能正常使用，则说明你的插件安装成功
+
+#### 八、 使用说明
+
+##### 管理员南
+
+- 后台可以添加分销，添加时，可以配置分销返佣方式和返佣值
+- 添加的分销需要开发人员实现业务代码才有效
+- 请不要随意修改分销标识，修改后需要开发人员修改对应的业务代码，不然将会失效
+
+##### 开发指南
+
+###### 添加关系绑定和分销机制
+
+```php
+#api\app\Models\v1\User.php
+//用户关系
+public function UserRelation()
+{
+    return $this->hasOne(UserRelation::class, 'children_id', 'id');
+}
+```
+
+###### 添加按钮
+
+```vue
+#trade\Dsshop\pages\user\user.vue
+<template>
+	<list-cell icon="icon-share" iconColor="#9789f7" @eventClick="navTo('/pages/user/share')" title="分享" tips="邀请好友赢10元奖励"></list-cell>
+</template>
+<script>
+
+</script>
+```
+
+###### 授权登录添加关联代码
+
+```vue
+#trade\Dsshop\pages\public\login.vue
+<script>
+export default{
+		data(){
+			return {
+               ruleForm: {
+                   ...
+                   uuid: ''
+               } 
+            }
+        },
+   	 	onLoad(){
+			if(options.uuid){
+				this.ruleForm.uuid = options.uuid
+			}
+		},
+}
+</script>
+```
+
+配置模板通知
+
+```php
+#api\config\notification.php
+'wechat'=>[ //微信公众号
+    ...
+    'recommend_success'=>env('WECHAT_SUBSCRIPTION_INFORMATION_RECOMMEND_SUCCESS',''),  //	推荐会员成功提醒
+    ],
+```
+
+```shell
+#.env
+WECHAT_SUBSCRIPTION_INFORMATION_RECOMMEND_SUCCESS=
+```
+
+
+
 ## 如何更新插件
-- 首先请备份项目，升级可能产生问题（如自行修改了涉及到升级的文件、下载的文件不全等问题）
-- 首先查看新版本支持的dshop的版本，如果符合，可通过后台直接升级，升级将会自动覆盖原有文件
-- 如果升级涉及到手动修改代码部分，升级说明中会进行讲解
+- 将最新版的插件下载，并替换老的插件，后台可一键升级
 ## 如何卸载插件
-- 插件安装后不建议卸载，因为涉及到多处手动修改的代码
-- 可以按以上安装方式反向操作，即可卸载
+- 后台可一键卸载
