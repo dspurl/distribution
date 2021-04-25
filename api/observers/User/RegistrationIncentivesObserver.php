@@ -21,15 +21,32 @@ use Illuminate\Http\Request;
 class RegistrationIncentivesObserver
 {
     protected $request;
+    protected $route = [
+        'app/register',
+        'app/authorization'
+    ];
+    protected $execute = false;
 
     public function __construct(Request $request)
     {
-        $this->request = $request;
+        if (!app()->runningInConsole()) {
+            $this->request = $request;
+            $path = explode("admin", $request->path());
+            if (count($path) == 2) {
+                $name = 'admin' . $path[1];
+            } else {
+                $path = explode("app", $request->path());
+                $name = 'app' . $path[1];
+            }
+            if (collect($this->route)->contains($name)) {
+                $this->execute = true;
+            }
+        }
     }
 
     public function created(User $user)
     {
-        if (strpos($this->request->path(), 'admin') == false) {
+        if ($this->execute || app()->runningInConsole()) {
             // 用户关系绑定
             if ($this->request->has('uuid')) {
                 // 注册奖励规则获取
