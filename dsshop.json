@@ -1,8 +1,1 @@
-{
-    "name": "分销",
-    "abbreviation": "distribution",
-    "describe": "分销插件，实现上下三级绑定，可根据自定义规则配置每级返佣金额，可按固定金额返佣和按比例返佣",
-    "url": "https://github.com/dspurl/distribution",
-    "download": "",
-    "versions": "1.1.0"
-}
+{"name":"\u5206\u9500","abbreviation":"distribution","describe":"\u4e09\u7ea7\u5206\u9500","versions":"2.2.0","author":"dspurl"}

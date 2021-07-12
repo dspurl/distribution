@@ -1,9 +1,6 @@
 <?php
-
 namespace App\Http\Requests\v1;
-
 use App\Http\Requests\Request;
-
 class SubmitDistributionRequest extends Request
 {
     /**
@@ -13,23 +10,16 @@ class SubmitDistributionRequest extends Request
      */
     public function authorize()
     {
-        switch ($this->method())
-        {
-            case 'POST':    //create
+        switch ($this->method()) {
+            case 'POST':
                 return true;
-            case 'PUT': //update
-                return true;
-            case 'PATCH':
             case 'GET':
-            case 'DELETE':
             default:
             {
                 return false;
             }
         }
-
     }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -37,43 +27,41 @@ class SubmitDistributionRequest extends Request
      */
     public function rules()
     {
-        switch ($this->method())
-        {
+        $request = Request::all();
+        switch ($this->method()) {
             case 'POST':    //create
-                return [
-                    'name' => 'required|string|max:30',
-                    'identification' => 'required|unique:distributions|string|max:100',
-                    'level' => 'required|integer',
-                    'state' => 'required|integer',
-                    'distribution_rule'=>'required|array',
-                    'distribution_rule.*.name'=>'required|string|max:30',
-                    'distribution_rule.*.type'=>'required|Boolean',
-                    'distribution_rule.*.level' => 'required|integer',
-                    'distribution_rule.*.price'=>'required|integer',
-                ];
-            case 'PUT': //update
-                $request = Request::all();
-                return [
-                    'name' => 'required|string|max:30',
-                    'identification' => 'required|unique:distributions,identification,'.$request['id'].'|string|max:100',
-                    'level' => 'required|integer',
-                    'state' => 'required|integer',
-                    'distribution_rule'=>'required|array',
-                    'distribution_rule.*.name'=>'required|string|max:30',
-                    'distribution_rule.*.type'=>'required|Boolean',
-                    'distribution_rule.*.level' => 'required|integer',
-                    'distribution_rule.*.price'=>'required|integer',
-                ];
-            case 'PATCH':
-            case 'GET':
-            case 'DELETE':
-            default:
-                {
-                    return [];
+                if (Request::has('id')) {   //更新
+                    return [
+                        'name' => 'required|string|max:30',
+                        'identification' => 'required|unique:distributions,identification,'.$request['id'].'|string|max:100',
+                        'level' => 'required|integer',
+                        'state' => 'required|integer',
+                        'distribution_rule'=>'required|array',
+                        'distribution_rule.*.name'=>'required|string|max:30',
+                        'distribution_rule.*.type'=>'required|Boolean',
+                        'distribution_rule.*.level' => 'required|integer',
+                        'distribution_rule.*.price'=>'required|integer',
+                    ];
+                } else {
+                    return [
+                        'name' => 'required|string|max:30',
+                        'identification' => 'required|unique:distributions|string|max:100',
+                        'level' => 'required|integer',
+                        'state' => 'required|integer',
+                        'distribution_rule'=>'required|array',
+                        'distribution_rule.*.name'=>'required|string|max:30',
+                        'distribution_rule.*.type'=>'required|Boolean',
+                        'distribution_rule.*.level' => 'required|integer',
+                        'distribution_rule.*.price'=>'required|integer',
+                    ];
                 }
+            case 'GET':
+            default:
+            {
+                return [];
+            }
         }
     }
-
     public function messages()
     {
         return [
