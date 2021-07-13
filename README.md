@@ -1,4 +1,5 @@
-#分销
+# 分销
+
 ## 说明
 - 该插件依赖dsshop项目，而非通用插件
 - 支持版本:dshop v2.0.0及以上
@@ -14,30 +15,6 @@
 - 暂不支持后台报表展示，后期会补全
 - 暂仅支持扫码通过H5唤起
 
-## 使用说明
-#### 一、 下载distribution最新版
-#### 二、 解压distribution到项目plugin目录下
-#### 三、 登录dshop后台，进入插件列表
-#### 四、 在线安装（请保持dshop的目录结构，如已部署到线上，请在本地测试环境安装，因涉及admin和uni-app，不建议在线安装）
-#### 五、 进入api目录执行数据库迁移使用
-
-```
-php artisan migrate
-```
-#### 六、 进入后台，添加权限
-
-| **权限名称** | **API**             | **分组**   | **菜单图标** | **显示在菜单栏** |
-| ------------ | ------------------- | ---------- | ------------ | ---------------- |
-| 分销         | Distribution        | 工具       | 否           | 是               |
-| 分销列表     | DistributionList    | 工具->分销 | 否           | 是               |
-| 添加分销     | DistributionCreate  | 工具->分销 | 否           | 否               |
-| 分销编辑     | DistributionEdit    | 工具->分销 | 否           | 否               |
-| 分销删除     | DistributionDestroy | 工具->分销 | 否           | 否               |
-
-
-
-#### 七、 进入后台，为管理员分配权限
-
 #### 八、 使用说明
 
 ##### 管理员南
@@ -48,23 +25,29 @@ php artisan migrate
 
 ##### 开发指南
 
-###### 添加关系绑定和分销机制
+- 插件并不整合到业务代码中，所以当你安装插件后，需要根据以下步骤进行个性化的开发
 
-```php
-#api\app\Models\v1\User.php
-//用户关系
-public function UserRelation()
-{
-    return $this->hasOne(UserRelation::class, 'children_id', 'id');
-}
+#### 移动端
+
+###### pages.json添加路由
+
+```js
+#client\uni-app\mix-mall\pages.json
+    ,{
+        "path": "pages/distribution/share",
+            "style": {
+                "enablePullDownRefresh": true,
+                    "navigationBarTitleText": "邀请好友"
+            }
+    }
 ```
 
 ###### 添加按钮
 
 ```vue
-#trade\Dsshop\pages\user\user.vue
+#client\uni-app\mix-mall\pages\user\user.vue
 <template>
-	<list-cell icon="icon-share" iconColor="#9789f7" @eventClick="navTo('/pages/user/share')" title="分享" tips="邀请好友赢10元奖励"></list-cell>
+	<list-cell icon="icon-share" iconColor="#9789f7" @eventClick="navTo('/pages/distribution/share')" title="分享" tips="邀请好友赢10元奖励"></list-cell>
 </template>
 <script>
 
@@ -74,7 +57,7 @@ public function UserRelation()
 ###### 授权登录添加关联代码
 
 ```vue
-#trade\Dsshop\pages\public\login.vue
+#client\uni-app\mix-mall\pages\public\login.vue
 <script>
 export default{
 		data(){
@@ -92,6 +75,22 @@ export default{
 		},
 }
 </script>
+```
+
+#### 网站
+
+###### 添加关系绑定和分销机制
+
+```php
+#api\app\Models\v1\User.php
+	/**
+     * 用户关系
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function UserRelation()
+    {
+        return $this->hasOne(UserRelation::class, 'children_id', 'id');
+    }
 ```
 
 配置模板通知
